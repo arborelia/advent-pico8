@@ -9,7 +9,7 @@ function serial_input()
  while not stat(120) do
  end
  
- print("\acg")
+ print("\afb-")
  
  local line = ""
  while stat(120) do
@@ -26,7 +26,12 @@ function serial_input()
  end
 end
 
+-- a global shared by the default
+-- handle_line and read_lines
 _lines = {}
+
+-- a cart can override the handle_line
+-- function, I think
 function handle_line(line)
  add(_lines, line)
 end
