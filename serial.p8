@@ -1,26 +1,42 @@
 pico-8 cartridge // http://www.pico-8.com
 version 33
 __lua__
-#include input1.lua
-#include advent.p8
-
-function increased_windows(arr, w)
- increases = 0
+function serial_input()
+ local base = 0x0000
+ print("\ace ready for input")
  
- for pos=(w+1),#arr do
-  val = arr[pos]
-  if (type(val) != "number") break
-  prev = arr[pos-w]
-  if val > prev then
-   increases += 1
+ -- wait until there's input
+ while not stat(120) do
+ end
+ 
+ print("\acg")
+ 
+ local line = ""
+ while stat(120) do
+  local len = serial(0x800, base, 0x1000)
+  for i=0,len-1 do
+   local c=chr(@(base+i))
+   if c=="\n" then
+    handle_line(line)
+    line = ""
+   else
+    line ..= c
+   end
   end
-	end
-	return increases
+ end
 end
 
-arr = split(input, "\n", true)
-?increased_windows(arr, 1)
-check(increased_windows(arr, 3))
+_lines = {}
+function handle_line(line)
+ add(_lines, line)
+end
+
+function read_lines()
+ _lines = {}
+ serial_input()
+ ?#_lines.." lines read"
+ return _lines
+end
 
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
