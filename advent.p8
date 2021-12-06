@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 33
+version 34
 __lua__
 function pause()
  while btn(🅾️) or btn(❎) do
@@ -56,12 +56,32 @@ function check(answer)
 end
 
 function test(result, expected, name)
- checktext = result.." = "..expected
  if type(result) != type(expected) then
   color(8)
   print("\ae- 😐 \0")
   print("expected "..type(expected)..", got "..type(result))
  else
+  -- we can't print bools???
+  if result==true then
+   result = "true"
+  end
+  if result==false then
+   result = "false"
+  end
+  if result==nil then
+   result = "nil"
+  end
+  if expected==true then
+   expected = "true"
+  end
+  if expected==false then
+   expected = "false"
+  end
+  if expected==nil then
+   expected = "nil"
+  end
+
+  checktext = result.." = "..expected
   if result == expected then
    color(11)
    print("\ag ♥ \0")

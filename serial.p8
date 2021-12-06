@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 33
+version 34
 __lua__
 function serial_input()
  local base = 0x0000
@@ -19,7 +19,7 @@ function serial_input()
    if c=="\n" then
     handle_line(line)
     line = ""
-   else
+   elseif c != "\r" then
     line ..= c
    end
   end
