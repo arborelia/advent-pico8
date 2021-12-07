@@ -4,6 +4,13 @@ __lua__
 #include advent.p8
 #include serial.p8
 
+-- okay I way overengineered this! it's trying to work with
+-- a smaller grid of coordinates by skipping coordinates that
+-- "don't matter". that didn't help enough.
+--
+-- look at day5b, which does the obvious simple thing that
+-- would have worked here too.
+
 -- takes a table whose keys
 -- are a set of small numbers
 -- returns the numbers in order
@@ -32,7 +39,7 @@ function parse_segment(l)
  }
 end
 
-function read_lines(lines)
+function parse_lines(lines)
  local segments = {}
  for l in all(lines) do
   add(segments, parse_segment(l))
@@ -117,54 +124,65 @@ hmore = 2
 vdot = 4
 vmore = 8
 
-function draw_horiz(seg, tab)
+function draw_horiz(seg, tab, xoffset, yoffset)
  local y = tab.ymap[seg.y1]
  local x1 = tab.xmap[seg.x1]
  local x2 = tab.xmap[seg.x2]
  local xmin = min(x1,x2)
  local xmax = max(x1,x2)
  for x=xmin,xmax do
-  local c = pget(x,y)
+  local c = pget(x-xoffset,y-yoffset)
   if c & hdot == hdot then
-   pset(x,y,c | hmore)
+   pset(x-xoffset,y-yoffset,c | hmore)
   else
-   pset(x,y,c | hdot)
+   pset(x-xoffset,y-yoffset,c | hdot)
   end
  end
 end
 
-function draw_vert(seg, tab)
+function draw_vert(seg, tab, xoffset, yoffset)
  local x = tab.xmap[seg.x1]
  local y1 = tab.ymap[seg.y1]
  local y2 = tab.ymap[seg.y2]
  local ymin = min(y1,y2)
  local ymax = max(y1,y2)
  for y=ymin,ymax do
-  local c = pget(x,y)
+  local c = pget(x-xoffset,y-yoffset)
   if c & vdot == vdot then
-   pset(x,y,c | vmore)
+   pset(x-xoffset,y-yoffset,c | vmore)
   else
-   pset(x,y,c | vdot)
+   pset(x-xoffset,y-yoffset,c | vdot)
   end
  end
 end
 
 function find_overlaps(segs)
- cls(0)
+ segs = filter_orthogonal(segs)
  local tab = coord_tables(segs)
  local horiz = filter_horizontal(segs)
  local vert = filter_vertical(segs)
  local c = 3
  -- find horiz+vert overlaps
- for seg in all(horiz) do
-  draw_horiz(seg,tab)
- end
- for seg in all(vert) do
-  draw_vert(seg,tab)
- end
- cursor(0,100)
- color(10)
- print(count_overlaps(tab))
+ local xscreens = flr(#tab.xs / 128)
+ local yscreens = flr(#tab.ys / 128)
+ local overlaps = 0
+ for xo=0,xscreens do
+  for yo=0,yscreens do
+   cls(0)
+   xoffset = xo*128
+   yoffset = yo*128
+		 for seg in all(horiz) do
+		  draw_horiz(seg,tab,xoffset,yoffset)
+		 end
+		 for seg in all(vert) do
+		  draw_vert(seg,tab,xoffset,yoffset)
+		 end
+		 overlaps += count_overlaps(tab,xoffset,yoffset)
+		end
+	end
+	cursor(0,100)
+ color(6)
+ return overlaps
 end
 
 -- look at the pixels on the
@@ -173,9 +191,9 @@ end
 -- count for
 function count_overlaps(tab)
  local overlaps = 0
- for x=0,127 do
-  for y=0,127 do
-   local c = pget(x,y)
+ for x=xoffset,xoffset+127 do
+  for y=yoffset,yoffset+127 do
+   local c = pget(x-xoffset,y-yoffset)
    if c & (hdot | vdot) == (hdot | vdot) then
     overlaps += 1
    else
@@ -217,7 +235,7 @@ small_input = [[0,9 -> 5,9
 0,4 -> 3,4
 0,0 -> 8,8
 5,5 -> 8,2]]
-segs = read_lines(split(small_input, "\n"))
+segs = parse_lines(split(small_input, "\n"))
 
 -- test that we read the right things
 test(#segs, 10, "read 10 segments")
@@ -233,8 +251,10 @@ test(#vert, 3, "3 are vertical")
 coords = coord_tables(orth)
 test(coords.xs, {0,1,3,4,5,6,7,8,9,10}, "x coords")
 test(coords.xmap[9], 9, "reverse mapping")
+test(find_overlaps(segs), 8, "small example")
 
-find_overlaps(segs)
+segs = parse_lines(read_lines())
+check(find_overlaps(segs))
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
