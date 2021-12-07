@@ -60,6 +60,7 @@ function test(result, expected, name)
   color(8)
   print("\ae- 😐 \0")
   print("expected "..type(expected)..", got "..type(result))
+  assert(false)
  else
   -- we can't print bools???
   if result==true then
@@ -80,28 +81,59 @@ function test(result, expected, name)
   if expected==nil then
    expected = "nil"
   end
+  
+  -- compare tables
+  if type(result) == "table" then
+   return test_list(result, expected, name)
+  end
 
   checktext = result.." = "..expected
   if result == expected then
-   color(11)
-   print("\ag ♥ \0")
+   succeed(name, result)
   else
-   color(8)
-   print("\ae- ❎ \0")  
-  end
-
-  color(7)
-  if name != nil then
-   print(name..": \0")
-  end
-  if result == expected then
-   print(result)
-  else
-   print(result.." != "..expected)
+   fail(name, result.." != "..expected)
   end
  end
- assert(result == expected)
 end
+
+function test_list(result, expected, name)
+ if #result == 0 then
+  color(10)
+  print("\ae- 😐 can't test keys")
+  return
+ end
+ if #result != #expected then
+  fail(name, "#elements "..#expected.." != "..#result)
+ end
+ for i=1,#expected do
+  if result[i] != expected[i] then
+   fail(name, "["..i.."] "..result[i].." != "..expected[i])
+  end
+ end
+ succeed(name, "[table]")
+end
+
+function succeed(name, msg)
+ color(11)
+ print("\ag ♥ \0")
+ color(7)
+ if name != nil then
+  print(name..": \0")
+ end
+ print(msg)
+end
+
+function fail(name, msg)
+ color(8)
+ print("\ae- ❎ \0")
+ color(7)
+ if name != nil then
+  print(name..": \0")
+ end
+ print(msg)
+ assert(false)
+end
+
 
 -->8
 function minify(num)
