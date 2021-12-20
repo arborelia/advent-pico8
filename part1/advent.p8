@@ -166,6 +166,26 @@ end
 function at(str, pos)
  return sub(str, pos, pos)
 end
+
+function insertion_sort(a)
+ for i=1,#a do
+  local j = i
+  while j > 1 and a[j-1] > a[j] do
+   a[j],a[j-1] = a[j-1],a[j]
+   j = j - 1
+  end
+ end
+end
+
+-- get a median of the table
+-- (smaller of the two if there
+-- is an even number of items)
+function median(tbl)
+ insertion_sort(tbl)
+ local mid=ceil(#tbl/2)
+ return tbl[mid]
+end
+
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000770000000000700070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
